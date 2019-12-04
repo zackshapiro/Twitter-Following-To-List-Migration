@@ -7,21 +7,22 @@ ACCESS_TOKEN_PUBLIC = '1201977948129021953-jlloxSB1fUD6cUCa4ZH0xscsEctw5t'
 ACCESS_TOKEN_SECRET = 'bRGDNb5jq3BU17k9Y4ASP3TcuayhK4Ca4C5xD0A8DoakH'
 
 LIST_NAME = 'Users-Following'
+LIST_PRIVATE = True     #Set to False if you want the list public
 
 #Setup authentication
 auth = tweepy.OAuthHandler(PUBLIC_API_KEY, SECRET_API_KEY)
 auth.set_access_token(ACCESS_TOKEN_PUBLIC, ACCESS_TOKEN_SECRET)
 api = tweepy.API(auth)
 
+#Set list mode to correct value
+list_mode = True if LIST_PRIVATE else False
 
 #Create the list the users will be added to
-our_list = api.create_list(LIST_NAME, mode='private', description='List of users I was following')
+#Need to check if list already exists
+our_list = api.create_list(LIST_NAME, mode=list_mode, description='List of users I was following')
 
-#print(vars(our_list))
 
-#print(our_list.id)
-
+#Iterate through friends adding them to list then unfollowing them
 for friend_id in api.friends_ids():
-    #print(friend_id)
     api.add_list_member(list_id=our_list.id, user_id=friend_id, owner_id=api.me().id)
-#    print(api.get_user(friend_id), "\n \n")
+    api.destroy_friendship(friend_id)
