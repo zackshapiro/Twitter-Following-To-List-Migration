@@ -6,9 +6,10 @@ SECRET_API_KEY = 'hjbzXudPrBHr8wkhpZm3LRPGYcSU5bQjuxyvNhwKLTxct3QN26'
 ACCESS_TOKEN_PUBLIC = '1201977948129021953-xnRqYL8OrTga3x6J0GKsRDaAvhFPbx'
 ACCESS_TOKEN_SECRET = 'HlKNMoupQDR2rxMobzFKbiyiHxgV8tbEF68eMG7zM1u5X'
 
-LIST_NAME = 'Users-Following'
+LIST_NAME = 'FollowingDec19'
 LIST_PRIVATE = True     #Set to False if you want the list public
 LIST_DESCRIPTION = 'List of users I was following'
+SKIP_UNFOLLOWING_PRIVATE_ACCOUNTS = False # Set to true to skip unfollowing private/locked accounts
 
 print('Running Twitter Following to List Migration Script...\n')
 
@@ -40,20 +41,13 @@ for friend_id in api.friends_ids():
     print(f"adding {friend_id} to list")
     api.add_list_member(list_id=our_list.id, user_id=friend_id, owner_id=api.me().id)
     num_added_to_list += 1
-    api.destroy_friendship(friend_id)
-    print(f"unfollowing {friend_id}")
+    
+    friend = api.get_user(friend_id)
 
-# #Verify that every person we're following is added to list
-# if num_added_to_list == following_count:
-#     verified = True
-# else:
-#     verified = False
-
-# if verified:
-#     #Iterate through friends unfollowing them
-#     for friend_id in api.friends_ids():
-#         api.destroy_friendship(friend_id)
-#     print('Script has finished running successfully.')
-# else:
-#     print("ERROR - Not all follows were added to list, not unfollowing users.")
-#     print('Script has been terminated due to error.')
+    if friend.protected:
+        if not SKIP_UNFOLLOWING_PRIVATE_ACCOUNTS:
+            api.destroy_friendship(friend_id)
+            print(f"unfollowing {friend_id}")
+    else:
+        api.destroy_friendship(friend_id)
+        print(f"unfollowing {friend_id}")
